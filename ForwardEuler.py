@@ -19,18 +19,21 @@ def ForwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
     N = (M**2) #GRID POINTS on time interval
 
     # ---- Length of the wire in x direction ---- 
-    x0, xL = 0, L 
+    x0 = 0
+    xL = L
 
     # ----- Spatial discretization step -----
     dx = (xL - x0)/(M)
 
     # ---- Final time ---- 
-    t0, tF = 0, T 
+    t0 = 0
+    tF = T 
 
     # ----- Time step -----
     dt = (tF - t0)/(N)
 
     #lambd = dt*k/dx**2
+    
     # ----- Creates grids -----
     xspan = np.linspace(x0, xL, M)
     tspan = np.linspace(t0, tF, N)
@@ -42,14 +45,27 @@ def ForwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
     U[:,0] = (1.0/2.0)+ np.cos(2.0*np.pi*xspan) - (1.0/2.0)*np.cos(3*np.pi*xspan)
 
     # ----- Neumann boundary conditions -----
+    """
+    To implement these boundary conditions, we again use “false points”, x_0 and x_N+1 which are external points. 
+    We use a centred difference to approximate ∂u/∂x (xL,t) and set it equal to the desired boundary condition:
+    
+    BEFORE: 
     U[0,:] = 0.0
     U[-1,:] = 0.0
-
+    
+    AFTER:
+    U[0,:] = (-3*U[x0,:] + 4*U[x1,:] - U[x2,:])/(2*dx)
+    U[-1,:] = (-3*U[x0,:] + 4*U[X1,:] - U[x2,:])/(2*dx)
+    """
+    
     # -----  ftcs -----
     for k in range(0, N-1):
         for i in range(1, M-1):
             U[i, k+1] = lambd*U[i-1, k] + (1-2*lambd)*U[i,k] + lambd*U[i+1,k] 
-            
+    
+    U[0,:] = (-3*U[0,:] + 4*U[1,:] - U[2,:])/2*dx
+    U[-1,:] = (-3*U[-1,:] + 4*U[-2,:] - U[-3,:])/2*dx
+    
     return (U, tspan, xspan)
 
 U, tspan, xspan = ForwardEuler(M = 14, lambd = 1.0/6.0)
