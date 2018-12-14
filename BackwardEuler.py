@@ -48,16 +48,23 @@ def BackwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
 
     # --- Initializes matrix U -----
     U = np.zeros((M, N))
+    #print(U)
 
     # --- Initial condition -----
     U[:,0] = (1.0/2.0)+ np.cos(2.0*np.pi*xspan) - (1.0/2.0)*np.cos(3*np.pi*xspan)
 
     # ---- Neumann boundary conditions -----
     leftBC = np.arange(1, N+1)
-    f = np.sin(2*leftBC*np.pi) #f = U[0,:] 
+    #f = np.sin(2*leftBC*np.pi) #f = U[0,:] 
 
     rightBC = np.arange(1, N+1)
-    g = np.sin(2*rightBC*np.pi) #g = U[-1,:]
+    #g = np.sin(2*rightBC*np.pi) #g = U[-1,:]
+    
+    U[0,:] = (-3*U[1,:] + 4*U[2,:] - U[3,:])/(2*dx)
+    U[-1,:] = (-3*U[1,:] + 4*U[2,:] - U[3,:])/(2*dx)
+    
+    f = U[0,:]
+    g = U[-1,:]
 
     for i in range(1, N):
         c = np.zeros((M-2,1)).ravel()
@@ -69,6 +76,6 @@ def BackwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
     
     return (U, tspan, xspan)
 
-#U, tspan, xspan = BackwardEuler(M = 14, lambd = 1.0/6.0)
-#Uexact, x, t = ExactSolution(M = 14)
-#surfaceplot(U, Uexact, tspan, xspan)
+U, tspan, xspan = BackwardEuler(M = 14, lambd = 1.0/6.0)
+Uexact, x, t = ExactSolution(M = 14)
+surfaceplot(U, Uexact, tspan, xspan, M = 14)
