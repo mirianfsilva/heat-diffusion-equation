@@ -23,14 +23,14 @@ def ForwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
     xL = L
 
     # ----- Spatial discretization step -----
-    dx = (xL - x0)/(M)
+    dx = (xL - x0)/(M-1)
 
     # ---- Final time ---- 
     t0 = 0
     tF = T 
 
     # ----- Time step -----
-    dt = (tF - t0)/(N)
+    dt = (tF - t0)/(N-1)
 
     #lambd = dt*k/dx**2
     
@@ -47,24 +47,29 @@ def ForwardEuler(M, lambd, T = 0.5, L = 1, k = 1):
     # ----- Neumann boundary conditions -----
     """
     To implement these boundary conditions, we again use “false points”, x_0 and x_N+1 which are external points. 
-    We use a centred difference to approximate ∂u/∂x (xL,t) and set it equal to the desired boundary condition:
+    We use a difference to approximate ∂u/∂x (xL,t) and set it equal to the desired boundary condition:
     
     BEFORE: 
     U[0,:] = 0.0
     U[-1,:] = 0.0
     
-    AFTER:
-    U[0,:] = (-3*U[x0,:] + 4*U[x1,:] - U[x2,:])/(2*dx)
-    U[-1,:] = (-3*U[x0,:] + 4*U[X1,:] - U[x2,:])/(2*dx)
+    NOW:
+    U[0,:] = (-3*U[0,:] + 4*U[1,:] - U[2,:])/2*dx = 0
+    U[-1,:] = (-3*U[-1,:] + 4*U[-2,:] - U[-3,:])/2*dx = 0
     """
+    
+    f = np.arange(1, N+1)
+    f = (-3*U[0,:] + 4*U[1,:] - U[2,:])/2*dx
+    U[0,:] = (4*U[1,:] - U[2,:])/3
+    
+    g = np.arange(1, N+1)
+    g = (-3*U[-1,:] + 4*U[-2,:] - U[-3,:])/2*dx
+    U[-1,:] = (4*U[-2,:] - U[-3,:])/3
     
     # -----  ftcs -----
     for k in range(0, N-1):
         for i in range(1, M-1):
             U[i, k+1] = lambd*U[i-1, k] + (1-2*lambd)*U[i,k] + lambd*U[i+1,k] 
-    
-    U[0,:] = (-3*U[0,:] + 4*U[1,:] - U[2,:])/2*dx
-    U[-1,:] = (-3*U[-1,:] + 4*U[-2,:] - U[-3,:])/2*dx
     
     return (U, tspan, xspan)
 
